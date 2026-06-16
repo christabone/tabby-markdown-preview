@@ -1,0 +1,15 @@
+.modal-header
+  h5.modal-title Open markdown file
+  button.btn-close((click)='activeModal.dismiss()')
+.modal-body
+  .mp-notice(*ngIf='notice') {{ notice }}
+  .mp-crumb {{ dir }}
+  .mp-error(*ngIf='error') {{ error }}
+  .mp-list
+    .mp-entry(*ngIf='canGoUp()' (click)='up()') ..
+    .mp-entry(
+      *ngFor='let e of entries'
+      [class.is-dir]='e.isDirectory'
+      [class.disabled]='!e.clickable'
+      (click)='open(e)'
+    ) {{ e.isDirectory ? '📁 ' : '📄 ' }}{{ e.name }}
