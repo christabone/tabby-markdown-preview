@@ -23,6 +23,9 @@ export class MarkdownPreviewTabComponent extends BaseTabComponent {
 
   async ngOnInit(): Promise<void> {
     this.setTitle(path.basename(this.filePath))
+  }
+
+  async ngAfterViewInit(): Promise<void> {
     await this.load()
   }
 
@@ -32,7 +35,7 @@ export class MarkdownPreviewTabComponent extends BaseTabComponent {
       const md = await readMarkdownFile(this.filePath)
       const body = renderMarkdown(md, { baseDir: path.dirname(this.filePath) })
       const doc = buildPreviewDocument(body, markdownCss)
-      setTimeout(() => { if (this.frame) { this.frame.nativeElement.srcdoc = doc } })
+      this.frame.nativeElement.srcdoc = doc
     } catch (e: any) {
       this.error = e instanceof PreviewError ? e.message : `Could not read file: ${e?.message ?? e}`
     }
@@ -51,7 +54,7 @@ export class MarkdownPreviewTabComponent extends BaseTabComponent {
       ev.preventDefault()
       const href = anchor.getAttribute('href') || ''
       if (/^(https?:|mailto:)/i.test(href)) {
-        shell.openExternal(href)
+        shell.openExternal(href).catch(err => console.error('openExternal failed:', err))
       }
     })
   }
