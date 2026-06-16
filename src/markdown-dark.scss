@@ -1,0 +1,35 @@
+body { margin: 0; }
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  color: #c9d1d9;
+  background: #0d1117;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+.markdown-body h1, .markdown-body h2 { border-bottom: 1px solid #21262d; padding-bottom: .3em; }
+.markdown-body a { color: #58a6ff; text-decoration: none; }
+.markdown-body a:hover { text-decoration: underline; }
+.markdown-body code {
+  background: rgba(110,118,129,.4); border-radius: 6px; padding: .2em .4em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 85%;
+}
+.markdown-body pre {
+  background: #161b22; border-radius: 6px; padding: 16px; overflow: auto;
+}
+.markdown-body pre code { background: transparent; padding: 0; }
+.markdown-body blockquote { color: #8b949e; border-left: .25em solid #30363d; padding: 0 1em; margin: 0; }
+.markdown-body table { border-collapse: collapse; }
+.markdown-body table th, .markdown-body table td { border: 1px solid #30363d; padding: 6px 13px; }
+.markdown-body img { max-width: 100%; }
+.markdown-body hr { border: 0; border-top: 1px solid #30363d; }
+/* minimal highlight.js dark theme */
+.hljs-keyword, .hljs-selector-tag { color: #ff7b72; }
+.hljs-string, .hljs-attr { color: #a5d6ff; }
+.hljs-comment { color: #8b949e; }
+.hljs-number, .hljs-literal { color: #79c0ff; }
+.hljs-title, .hljs-function .hljs-title { color: #d2a8ff; }
