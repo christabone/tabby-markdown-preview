@@ -21,7 +21,7 @@ export class FileBrowserComponent {
   }
 
   canGoUp(): boolean {
-    return path.dirname(this.dir) !== this.dir
+    return !!this.dir && path.dirname(this.dir) !== this.dir
   }
 
   up(): void {
@@ -35,6 +35,7 @@ export class FileBrowserComponent {
       this.error = null
     } catch (e: any) {
       this.error = `Cannot open ${target}: ${e?.message ?? e}`
+      this.entries = []
     }
   }
 
