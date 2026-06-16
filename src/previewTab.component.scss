@@ -1,0 +1,5 @@
+.mp-root { display: flex; flex-direction: column; height: 100%; background: #0d1117; }
+.mp-toolbar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid #21262d; }
+.mp-path { color: #8b949e; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-error { color: #f85149; padding: 16px; }
+.mp-frame { flex: 1; border: 0; width: 100%; }
