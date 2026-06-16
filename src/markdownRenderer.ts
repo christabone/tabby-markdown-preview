@@ -42,9 +42,12 @@ export function renderMarkdown(markdown: string, options: RenderOptions): string
   const rawHtml = marked.parse(markdown, { async: false }) as string
 
   const hook = (node: Element) => {
-    if (node.tagName === 'A' && node.hasAttribute('href')) {
-      node.setAttribute('rel', 'noopener noreferrer')
-      node.setAttribute('target', '_blank')
+    if (node.tagName === 'A') {
+      const href = node.getAttribute('href') || ''
+      if (href && !href.startsWith('#')) {
+        node.setAttribute('rel', 'noopener noreferrer')
+        node.setAttribute('target', '_blank')
+      }
     }
     if (node.tagName === 'IMG') {
       const rewritten = resolveLocalImage(node.getAttribute('src') || '', options.baseDir)
@@ -63,6 +66,6 @@ export function renderMarkdown(markdown: string, options: RenderOptions): string
       FORBID_ATTR: ['style'],
     })
   } finally {
-    DOMPurify.removeHook('afterSanitizeAttributes')
+    DOMPurify.removeHook('afterSanitizeAttributes', hook as any)
   }
 }

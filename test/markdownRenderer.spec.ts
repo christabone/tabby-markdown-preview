@@ -48,4 +48,12 @@ describe('renderMarkdown', () => {
     const html = renderMarkdown('![a](https://evil/x.png)', opts)
     expect(html).not.toContain('https://evil')
   })
+  it('drops the src of a traversal image via render', () => {
+    const html = renderMarkdown('![a](../../etc/passwd)', opts)
+    expect(html).not.toContain('etc/passwd')
+  })
+  it('does not add target=_blank to in-page fragment links', () => {
+    const html = renderMarkdown('[x](#section)', opts)
+    expect(html).not.toContain('target="_blank"')
+  })
 })
