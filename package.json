@@ -2,7 +2,9 @@
   "name": "tabby-markdown-preview",
   "version": "0.1.0",
   "description": "Preview markdown files in a dark VSCode-style tab from the terminal's working directory.",
-  "keywords": ["tabby-plugin"],
+  "keywords": [
+    "tabby-plugin"
+  ],
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
@@ -11,7 +13,9 @@
     "test": "jest",
     "prepublishOnly": "npm run build"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
   "dependencies": {
     "dompurify": "^3.2.7",
@@ -34,11 +38,12 @@
     "@types/jest": "^29.5.0",
     "@types/marked": "^6.0.0",
     "@types/node": "^20.0.0",
+    "apply-loader": "^2.0.0",
     "css-loader": "^6.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
+    "pug": "^3.0.4",
     "pug-loader": "^2.4.0",
-    "apply-loader": "^2.0.0",
     "rxjs": "^7.0.0",
     "sass": "^1.69.0",
     "sass-loader": "^13.0.0",

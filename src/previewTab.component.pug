@@ -1,11 +1,11 @@
 .mp-root
   .mp-toolbar
-    button.btn.btn-sm.btn-secondary((click)='load()') Reload
+    button.btn.btn-sm.btn-secondary("(click)"='load()') Reload
     span.mp-path {{ filePath }}
-  .mp-error(*ngIf='error') {{ error }}
+  .mp-error("*ngIf"='error') {{ error }}
   iframe.mp-frame(
-    #frame
-    [hidden]='!!error'
+    "#frame"=''
+    "[hidden]"='!!error'
     sandbox='allow-same-origin'
-    (load)='onFrameLoad()'
+    "(load)"='onFrameLoad()'
   )
