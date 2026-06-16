@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core'
+import { ChangeDetectorRef, Component, ElementRef, Injector, ViewChild } from '@angular/core'
 import { BaseTabComponent } from 'tabby-core'
 import { shell } from 'electron'
 import * as path from 'path'
@@ -17,8 +17,11 @@ export class MarkdownPreviewTabComponent extends BaseTabComponent {
   error: string | null = null
   @ViewChild('frame', { static: false }) frame!: ElementRef<HTMLIFrameElement>
 
-  constructor() {
-    super()
+  constructor(private cdr: ChangeDetectorRef, injector: Injector) {
+    // Tabby's runtime BaseTabComponent requires an Injector (it calls injector.get(ConfigService)),
+    // but the published tabby-core typings declare a parameterless constructor — hence the ts-ignore.
+    // @ts-ignore
+    super(injector)
   }
 
   async ngOnInit(): Promise<void> {
@@ -39,6 +42,8 @@ export class MarkdownPreviewTabComponent extends BaseTabComponent {
     } catch (e: any) {
       this.error = e instanceof PreviewError ? e.message : `Could not read file: ${e?.message ?? e}`
     }
+    // fs.promises continuations run outside Angular's zone, so refresh the view manually.
+    this.cdr.detectChanges()
   }
 
   onFrameLoad(): void {

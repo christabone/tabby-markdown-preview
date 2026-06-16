@@ -68,8 +68,9 @@ the design spec in `docs/superpowers/specs/` for the full threat model.
 
 ## Compatibility
 
-Built and verified against Tabby's `tabby-core`/`tabby-terminal` **1.0.x**
-(Angular 16). If your Tabby ships a different major version, rebuild from source.
+Built for Tabby **1.0.x** (Angular 15) and verified end-to-end against Tabby
+**1.0.234** (toolbar button → file browser → rendered preview). If your Tabby
+ships a different Angular major version, rebuild from source against its toolchain.
 
 ## License
 

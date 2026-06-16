@@ -28,8 +28,7 @@ export class MarkdownToolbarButtonProvider extends ToolbarButtonProvider {
   private async openBrowser(): Promise<void> {
     const { dir, notice } = await this.cwdResolver.resolve()
     const modal = this.ngbModal.open(FileBrowserComponent, { size: 'lg' })
-    modal.componentInstance.dir = dir
-    modal.componentInstance.notice = notice
+    modal.componentInstance.init(dir, notice)
 
     let filePath: string | undefined
     try {

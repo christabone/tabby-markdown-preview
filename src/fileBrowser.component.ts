@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { ChangeDetectorRef, Component } from '@angular/core'
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap'
 import * as path from 'path'
 import { listDirectory, DirEntry } from './directoryListing'
@@ -14,10 +14,15 @@ export class FileBrowserComponent {
   entries: DirEntry[] = []
   error: string | null = null
 
-  constructor(public activeModal: NgbActiveModal) {}
+  constructor(public activeModal: NgbActiveModal, private cdr: ChangeDetectorRef) {}
 
-  async ngOnInit(): Promise<void> {
-    await this.navigate(this.dir)
+  /** Called by the opener right after the modal is created, with the resolved directory.
+   * Done explicitly (not in ngOnInit) because NgbModal runs ngOnInit before the caller
+   * can assign inputs, which would otherwise navigate to an empty directory. */
+  init(dir: string, notice?: string): void {
+    this.dir = dir
+    this.notice = notice
+    void this.navigate(dir)
   }
 
   canGoUp(): boolean {
@@ -37,6 +42,8 @@ export class FileBrowserComponent {
       this.error = `Cannot open ${target}: ${e?.message ?? e}`
       this.entries = []
     }
+    // fs.promises continuations run outside Angular's zone, so refresh the view manually.
+    this.cdr.detectChanges()
   }
 
   open(entry: DirEntry): void {
