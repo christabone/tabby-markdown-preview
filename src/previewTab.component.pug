@@ -1,7 +1,7 @@
 .mp-root
   .mp-toolbar
     button.btn.btn-sm.btn-secondary("(click)"='load()') Reload
-    span.mp-path {{ filePath }}
+    span.mp-path {{ title }}
   .mp-error("*ngIf"='error') {{ error }}
   iframe.mp-frame(
     "#frame"=''

@@ -1,8 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, Injector, ViewChild } from '@angular/core'
 import { BaseTabComponent } from 'tabby-core'
 import { shell } from 'electron'
-import * as path from 'path'
-import { readMarkdownFile, PreviewError } from './fileReader'
+import { PreviewError } from './fileReader'
 import { renderMarkdown } from './markdownRenderer'
 import { buildPreviewDocument } from './previewDocument'
 import markdownCss from './markdown-dark.scss'
@@ -13,7 +12,9 @@ import markdownCss from './markdown-dark.scss'
   styles: [require('./previewTab.component.scss')],
 })
 export class MarkdownPreviewTabComponent extends BaseTabComponent {
-  filePath = ''
+  title = ''
+  loader: () => Promise<string> = async () => ''
+  baseDir: string | null = null
   error: string | null = null
   @ViewChild('frame', { static: false }) frame!: ElementRef<HTMLIFrameElement>
 
@@ -25,7 +26,7 @@ export class MarkdownPreviewTabComponent extends BaseTabComponent {
   }
 
   async ngOnInit(): Promise<void> {
-    this.setTitle(path.basename(this.filePath))
+    this.setTitle(this.title)
   }
 
   async ngAfterViewInit(): Promise<void> {
@@ -35,14 +36,14 @@ export class MarkdownPreviewTabComponent extends BaseTabComponent {
   async load(): Promise<void> {
     this.error = null
     try {
-      const md = await readMarkdownFile(this.filePath)
-      const body = renderMarkdown(md, { baseDir: path.dirname(this.filePath) })
+      const md = await this.loader()
+      const body = renderMarkdown(md, { baseDir: this.baseDir })
       const doc = buildPreviewDocument(body, markdownCss)
       this.frame.nativeElement.srcdoc = doc
     } catch (e: any) {
       this.error = e instanceof PreviewError ? e.message : `Could not read file: ${e?.message ?? e}`
     }
-    // fs.promises continuations run outside Angular's zone, so refresh the view manually.
+    // loader (fs/SFTP) continuations run outside Angular's zone — refresh the view.
     this.cdr.detectChanges()
   }
 

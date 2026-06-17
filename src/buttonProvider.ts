@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { ToolbarButtonProvider, ToolbarButton, AppService } from 'tabby-core'
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap'
-import { CwdResolver } from './cwdResolver'
+import { SourceResolver } from './sourceResolver'
 import { FileBrowserComponent } from './fileBrowser.component'
 import { MarkdownPreviewTabComponent } from './previewTab.component'
 import { markdownIcon } from './icon'
@@ -11,7 +11,7 @@ export class MarkdownToolbarButtonProvider extends ToolbarButtonProvider {
   constructor(
     private app: AppService,
     private ngbModal: NgbModal,
-    private cwdResolver: CwdResolver,
+    private sourceResolver: SourceResolver,
   ) {
     super()
   }
@@ -26,9 +26,9 @@ export class MarkdownToolbarButtonProvider extends ToolbarButtonProvider {
   }
 
   private async openBrowser(): Promise<void> {
-    const { dir, notice } = await this.cwdResolver.resolve()
+    const source = await this.sourceResolver.resolve()
     const modal = this.ngbModal.open(FileBrowserComponent, { size: 'lg' })
-    modal.componentInstance.init(dir, notice)
+    modal.componentInstance.init(source)
 
     let filePath: string | undefined
     try {
@@ -37,7 +37,18 @@ export class MarkdownToolbarButtonProvider extends ToolbarButtonProvider {
       return // dismissed / escaped
     }
     if (filePath) {
-      this.app.openNewTab({ type: MarkdownPreviewTabComponent, inputs: { filePath } })
+      this.app.openNewTab({
+        type: MarkdownPreviewTabComponent,
+        inputs: {
+          title: source.parentOf(filePath) === filePath ? filePath : filePath.split(/[\\/]/).pop() || filePath,
+          loader: () => source.read(filePath as string),
+          baseDir: source.allowImages ? sourceDirname(source, filePath) : null,
+        },
+      })
     }
   }
+}
+
+function sourceDirname(source: { parentOf(p: string): string }, filePath: string): string {
+  return source.parentOf(filePath)
 }

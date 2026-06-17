@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component } from '@angular/core'
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap'
-import * as path from 'path'
-import { listDirectory, DirEntry } from './directoryListing'
+import { DirEntry } from './directoryListing'
+import { FileSource } from './fileSource'
 
 @Component({
   selector: 'markdown-file-browser',
@@ -13,36 +13,36 @@ export class FileBrowserComponent {
   notice?: string
   entries: DirEntry[] = []
   error: string | null = null
+  private source!: FileSource
 
   constructor(public activeModal: NgbActiveModal, private cdr: ChangeDetectorRef) {}
 
-  /** Called by the opener right after the modal is created, with the resolved directory.
-   * Done explicitly (not in ngOnInit) because NgbModal runs ngOnInit before the caller
-   * can assign inputs, which would otherwise navigate to an empty directory. */
-  init(dir: string, notice?: string): void {
-    this.dir = dir
-    this.notice = notice
-    void this.navigate(dir)
+  /** Called by the opener right after the modal is created (NgbModal runs ngOnInit
+   * before inputs are assigned, so we navigate explicitly here). */
+  init(source: FileSource): void {
+    this.source = source
+    this.notice = source.notice
+    void this.navigate(source.start)
   }
 
   canGoUp(): boolean {
-    return !!this.dir && path.dirname(this.dir) !== this.dir
+    return !!this.dir && this.source.parentOf(this.dir) !== this.dir
   }
 
   up(): void {
-    void this.navigate(path.dirname(this.dir))
+    void this.navigate(this.source.parentOf(this.dir))
   }
 
   async navigate(target: string): Promise<void> {
     try {
-      this.entries = await listDirectory(target)
+      this.entries = await this.source.list(target)
       this.dir = target
       this.error = null
     } catch (e: any) {
       this.error = `Cannot open ${target}: ${e?.message ?? e}`
       this.entries = []
     }
-    // fs.promises continuations run outside Angular's zone, so refresh the view manually.
+    // fs/SFTP continuations run outside Angular's zone, so refresh the view manually.
     this.cdr.detectChanges()
   }
 
