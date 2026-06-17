@@ -1,6 +1,6 @@
 {
   "name": "tabby-markdown-preview",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Preview markdown files in a dark VSCode-style tab from the terminal's working directory.",
   "keywords": [
     "tabby-plugin"

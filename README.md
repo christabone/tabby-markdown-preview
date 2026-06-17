@@ -10,12 +10,16 @@ Click the toolbar button, browse the active terminal's working directory, pick a
 ## Features
 
 - **Toolbar button** that opens a file browser rooted at the **active terminal's
-  working directory** (falls back to your home directory for remote/SSH sessions
-  or when the working directory can't be determined).
+  working directory** (falls back to your home directory when the working
+  directory can't be determined).
+- **SSH-aware:** on an SSH tab it browses the **remote** filesystem over Tabby's
+  own SFTP connection — rooted at the remote shell's working directory — and
+  previews remote `.md` files. Local terminals browse locally, as before.
 - Renders Markdown in a **new tab** with a dark, GitHub-style theme and
   syntax-highlighted code blocks (highlight.js).
 - **Reload** button to re-render after you edit the file on disk.
-- Relative-path images render; links open in your **external browser**.
+- Relative-path images render for local files (remote images are skipped); links
+  open in your **external browser**.
 - Read-only and security-hardened: the rendered HTML is sanitized with DOMPurify
   and shown inside a **sandboxed `<iframe>` with a strict Content-Security-Policy**
   (no script execution, no remote resource loading).
