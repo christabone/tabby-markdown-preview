@@ -8,34 +8,49 @@ export interface DirEntry {
   clickable: boolean
 }
 
+export interface RawEntry {
+  name: string
+  path: string
+  isDirectory: boolean
+  clickable: boolean
+}
+
 const MD_EXT = ['.md', '.markdown']
 
 type FsLike = Pick<typeof fs.promises, 'readdir' | 'realpath' | 'stat'>
 
+export function classifyEntries(raw: RawEntry[]): DirEntry[] {
+  const entries: DirEntry[] = []
+  for (const r of raw) {
+    if (r.isDirectory) {
+      entries.push({ name: r.name, path: r.path, isDirectory: true, clickable: r.clickable })
+    } else if (r.clickable && MD_EXT.includes(path.extname(r.name).toLowerCase())) {
+      entries.push({ name: r.name, path: r.path, isDirectory: false, clickable: true })
+    }
+  }
+  return sortEntries(entries)
+}
+
 export async function listDirectory(dir: string, fsImpl: FsLike = fs.promises): Promise<DirEntry[]> {
   const dirents = await fsImpl.readdir(dir, { withFileTypes: true })
-  const entries: DirEntry[] = []
+  const raw: RawEntry[] = []
   for (const d of dirents) {
     const full = path.join(dir, d.name)
-    let isDir = d.isDirectory()
+    let isDirectory = d.isDirectory()
     let clickable = true
     if (d.isSymbolicLink()) {
       try {
         const real = await fsImpl.realpath(full)
         const st = await fsImpl.stat(real)
-        isDir = st.isDirectory()
+        isDirectory = st.isDirectory()
       } catch {
-        isDir = false
+        isDirectory = false
         clickable = false
       }
     }
-    if (isDir) {
-      entries.push({ name: d.name, path: full, isDirectory: true, clickable })
-    } else if (clickable && MD_EXT.includes(path.extname(d.name).toLowerCase())) {
-      entries.push({ name: d.name, path: full, isDirectory: false, clickable: true })
-    }
+    raw.push({ name: d.name, path: full, isDirectory, clickable })
   }
-  return sortEntries(entries)
+  return classifyEntries(raw)
 }
 
 export function sortEntries(entries: DirEntry[]): DirEntry[] {

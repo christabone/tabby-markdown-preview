@@ -1,4 +1,4 @@
-import { listDirectory, sortEntries, DirEntry } from '../src/directoryListing'
+import { listDirectory, sortEntries, DirEntry, classifyEntries, RawEntry } from '../src/directoryListing'
 
 function dirent(name: string, kind: 'dir' | 'file' | 'link') {
   return {
@@ -7,6 +7,23 @@ function dirent(name: string, kind: 'dir' | 'file' | 'link') {
     isSymbolicLink: () => kind === 'link',
   } as any
 }
+
+describe('classifyEntries', () => {
+  const raw: RawEntry[] = [
+    { name: 'b.md', path: '/x/b.md', isDirectory: false, clickable: true },
+    { name: 'sub', path: '/x/sub', isDirectory: true, clickable: true },
+    { name: 'a.md', path: '/x/a.md', isDirectory: false, clickable: true },
+    { name: 'c.txt', path: '/x/c.txt', isDirectory: false, clickable: true },
+    { name: 'broken', path: '/x/broken', isDirectory: false, clickable: false },
+    { name: 'note.MARKDOWN', path: '/x/note.MARKDOWN', isDirectory: false, clickable: true },
+  ]
+  it('keeps dirs + .md/.markdown, drops others, dirs first then alphabetical', () => {
+    expect(classifyEntries(raw).map(e => e.name)).toEqual(['sub', 'a.md', 'b.md', 'note.MARKDOWN'])
+  })
+  it('drops a non-clickable (broken) non-md entry', () => {
+    expect(classifyEntries([{ name: 'broken', path: '/x/broken', isDirectory: false, clickable: false }])).toEqual([])
+  })
+})
 
 describe('sortEntries', () => {
   it('puts directories before files, each alphabetical', () => {
