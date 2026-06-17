@@ -56,4 +56,14 @@ describe('renderMarkdown', () => {
     const html = renderMarkdown('[x](#section)', opts)
     expect(html).not.toContain('target="_blank"')
   })
+  it('drops all images when baseDir is null (remote source)', () => {
+    const html = renderMarkdown('![a](img/a.png)\n\n![b](https://x/y.png)', { baseDir: null })
+    expect(html).not.toContain('img/a.png')
+    expect(html).not.toContain('https://x/y.png')
+    expect(html).not.toContain('src=')
+  })
+  it('still resolves relative images when baseDir is a real dir', () => {
+    const html = renderMarkdown('![a](img/a.png)', { baseDir: '/docs/project' })
+    expect(html).toContain('file:///docs/project/img/a.png')
+  })
 })

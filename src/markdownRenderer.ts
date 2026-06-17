@@ -6,7 +6,7 @@ import * as path from 'path'
 import { pathToFileURL } from 'url'
 
 export interface RenderOptions {
-  baseDir: string
+  baseDir: string | null
 }
 
 const marked = new Marked(
@@ -50,7 +50,9 @@ export function renderMarkdown(markdown: string, options: RenderOptions): string
       }
     }
     if (node.tagName === 'IMG') {
-      const rewritten = resolveLocalImage(node.getAttribute('src') || '', options.baseDir)
+      const rewritten = options.baseDir === null
+        ? null
+        : resolveLocalImage(node.getAttribute('src') || '', options.baseDir)
       if (rewritten) {
         node.setAttribute('src', rewritten)
       } else {
