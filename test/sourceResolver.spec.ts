@@ -1,4 +1,4 @@
-import { resolveSource, ResolveDeps } from '../src/sourceResolver'
+import { resolveSource, ResolveDeps, deriveTabFacts } from '../src/sourceResolver'
 
 function deps(over: Partial<ResolveDeps>): ResolveDeps {
   return {
@@ -40,5 +40,48 @@ describe('resolveSource', () => {
   it('non-terminal → local source at home', async () => {
     const r: any = await resolveSource(deps({ isLocalTerminal: false, supportsWorkingDirectory: false }))
     expect(r.kind).toBe('local'); expect(r.start).toBe('/home/me')
+  })
+})
+
+describe('deriveTabFacts (unwraps the focused leaf of a SplitTabComponent)', () => {
+  const termSession = { supportsWorkingDirectory: () => true, getWorkingDirectory: async () => '/r' }
+
+  it('unwraps a SplitTabComponent wrapper to a focused SSH leaf', () => {
+    const sshLeaf = { sshSession: { openSFTP: async () => ({}) }, session: termSession, profile: { type: 'ssh' } }
+    const f = deriveTabFacts({ getFocusedTab: () => sshLeaf })
+    expect(f.isSshTab).toBe(true)
+    expect(f.sshSession).toBe(sshLeaf.sshSession)
+    expect(f.session).toBe(sshLeaf.session)
+    expect(f.isLocalTerminal).toBe(false)
+  })
+
+  it('unwraps to a focused local terminal leaf', () => {
+    const localLeaf = { session: termSession, profile: { type: 'local' } }
+    const f = deriveTabFacts({ getFocusedTab: () => localLeaf })
+    expect(f.isSshTab).toBe(false)
+    expect(f.isLocalTerminal).toBe(true)
+    expect(f.session).toBe(localLeaf.session)
+  })
+
+  it('handles a directly-focused SSH leaf with no wrapper', () => {
+    const sshLeaf = { sshSession: { openSFTP: async () => ({}) }, session: termSession }
+    expect(deriveTabFacts(sshLeaf).isSshTab).toBe(true)
+  })
+
+  it('treats a non-terminal tab (no getFocusedTab, no session) as neither', () => {
+    const f = deriveTabFacts({})
+    expect(f.isSshTab).toBe(false)
+    expect(f.isLocalTerminal).toBe(false)
+  })
+
+  it('does not classify a remote (ssh/telnet/serial) profile as a local terminal', () => {
+    const f = deriveTabFacts({ getFocusedTab: () => ({ session: termSession, profile: { type: 'telnet' } }) })
+    expect(f.isLocalTerminal).toBe(false)
+  })
+
+  it('null active tab → neither', () => {
+    const f = deriveTabFacts(null)
+    expect(f.isSshTab).toBe(false)
+    expect(f.isLocalTerminal).toBe(false)
   })
 })

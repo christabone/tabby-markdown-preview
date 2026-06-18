@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core'
 import { AppService } from 'tabby-core'
-import { BaseTerminalTabComponent } from 'tabby-terminal'
 import * as fs from 'fs'
 import * as os from 'os'
 import { FileSource, SftpLike, LocalFileSource, SftpFileSource } from './fileSource'
@@ -51,23 +50,41 @@ export async function resolveSource(d: ResolveDeps): Promise<FileSource> {
   return d.makeLocal(d.homedir)
 }
 
+export interface TabFacts {
+  isSshTab: boolean
+  sshSession: any | null
+  session: any | null
+  isLocalTerminal: boolean
+}
+
+/** Tabby's `AppService.activeTab` is usually a SplitTabComponent wrapper; the real
+ * terminal/SSH tab is its focused leaf (`getFocusedTab()`). Read tab facts from that
+ * leaf, duck-typed (no `instanceof`) so it stays robust across Tabby versions. */
+export function deriveTabFacts(activeTab: any): TabFacts {
+  const leaf =
+    activeTab && typeof activeTab.getFocusedTab === 'function'
+      ? activeTab.getFocusedTab()
+      : activeTab
+  const sshSession = leaf?.sshSession ?? null
+  const isSshTab = !!sshSession && typeof sshSession.openSFTP === 'function'
+  const session = leaf?.session ?? null
+  const isTerminalSession = !!session && typeof session.supportsWorkingDirectory === 'function'
+  const profileType: string | undefined = leaf?.profile?.type
+  const isLocalTerminal =
+    !isSshTab && isTerminalSession && !REMOTE_PROFILE_TYPES.includes(profileType ?? '')
+  return { isSshTab, sshSession, session, isLocalTerminal }
+}
+
 @Injectable({ providedIn: 'root' })
 export class SourceResolver {
   constructor(private app: AppService) {}
 
   async resolve(): Promise<FileSource> {
-    const tab: any = this.app.activeTab
-    const ssh = tab?.sshSession
-    const isSshTab = !!ssh && typeof ssh.openSFTP === 'function'
-    const isTerminal = tab instanceof BaseTerminalTabComponent
-    const session = isTerminal ? (tab as any).session : null
-    const profileType: string | undefined = tab?.profile?.type
-    const isLocalTerminal =
-      isTerminal && !isSshTab && !REMOTE_PROFILE_TYPES.includes(profileType ?? '')
+    const { isSshTab, sshSession, session, isLocalTerminal } = deriveTabFacts(this.app.activeTab)
 
     return resolveSource({
       isSshTab,
-      openSFTP: () => ssh.openSFTP(),
+      openSFTP: () => sshSession.openSFTP(),
       getRemoteCwd: () => session?.getWorkingDirectory?.() ?? Promise.resolve(null),
       isLocalTerminal,
       supportsWorkingDirectory: !!session?.supportsWorkingDirectory?.(),
